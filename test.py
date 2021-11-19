@@ -24,17 +24,17 @@ def insert_job(alg, workload):
 
 def test_compile(job):
 	os.system("cp "+ dbms_cfg[0] +' ' + dbms_cfg[1])
-	for (param, value) in job.iteritems():
+	for (param, value) in job.items():
 		pattern = r"\#define\s*" + re.escape(param) + r'.*'
 		replacement = "#define " + param + ' ' + str(value)
 		replace(dbms_cfg[1], pattern, replacement)
 	os.system("make clean > temp.out 2>&1")
 	ret = os.system("make -j8 > temp.out 2>&1")
 	if ret != 0:
-		print "ERROR in compiling job="
-		print job
+		print ("ERROR in compiling job=")
+		print (job)
 		exit(0)
-	print "PASS Compile\t\talg=%s,\tworkload=%s" % (job['CC_ALG'], job['WORKLOAD'])
+	print ("PASS Compile\t\talg=%s,\tworkload=%s" % (job['CC_ALG'], job['WORKLOAD']))
 
 def test_run(test = '', job=None):
 	app_flags = ""
@@ -55,21 +55,19 @@ def test_run(test = '', job=None):
 		if (now - start).seconds > timeout:
 			os.kill(process.pid, signal.SIGKILL)
 			os.waitpid(-1, os.WNOHANG)
-			print "ERROR. Timeout cmd=%s" % cmd
+			print ("ERROR. Timeout cmd=%s" % cmd)
 			exit(0)
-	if "PASS" in process.stdout.read():
+	if "PASS" in process.stdout.read().decode():
 		if test != '':
-			print "PASS execution. \talg=%s,\tworkload=%s(%s)" % \
-				(job["CC_ALG"], job["WORKLOAD"], test)
+			print ("PASS execution. \talg=%s,\tworkload=%s(%s)" % (job["CC_ALG"], job["WORKLOAD"], test))
 		else :
-			print "PASS execution. \talg=%s,\tworkload=%s" % \
-				(job["CC_ALG"], job["WORKLOAD"])
+			print ("PASS execution. \talg=%s,\tworkload=%s" % (job["CC_ALG"], job["WORKLOAD"]))
 		return
-	print "FAILED execution. cmd = %s" % cmd
+	print ("FAILED execution. cmd = %s" % cmd)
 	exit(0)
 
 def run_all_test(jobs) :
-	for (jobname, job) in jobs.iteritems():
+	for (jobname, job) in jobs.items():
 		test_compile(job)
 		if job['WORKLOAD'] == 'TEST':
 			test_run('read_write', job)
